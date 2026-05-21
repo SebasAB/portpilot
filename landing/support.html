@@ -3,11 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support · PortPilot</title>
-  <meta name="description" content="Get help with PortPilot — answers to common questions, troubleshooting tips, and how to reach the developer." />
+  <title>Support &amp; FAQ · PortPilot</title>
+  <meta name="description" content="Get help with PortPilot — answers about stopping ports, SIGTERM vs SIGKILL, Docker detection, permissions, and how to reach the developer." />
+  <link rel="canonical" href="https://portpilot-ten.vercel.app/support" />
+  <meta name="theme-color" content="#0d1117" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PortPilot" />
+  <meta property="og:title" content="Support & FAQ · PortPilot" />
+  <meta property="og:description" content="Answers about stopping ports, SIGTERM vs SIGKILL, Docker detection, permissions, and how to reach the developer." />
+  <meta property="og:url" content="https://portpilot-ten.vercel.app/support" />
+  <meta property="og:image" content="https://portpilot-ten.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Support & FAQ · PortPilot" />
+  <meta name="twitter:description" content="Answers about stopping ports, Docker detection, permissions, and more." />
+  <meta name="twitter:image" content="https://portpilot-ten.vercel.app/og-image.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What does PortPilot actually do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PortPilot is a macOS menu bar utility that shows you what's running on your local ports. It identifies the process, the project directory, the framework (Next.js, Vite, Rails, etc.), and whether the port is bound by a Docker container — then lets you stop it safely."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why doesn't the Stop button work on some processes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A port might be unstoppable for a few reasons. Protected system processes such as mDNSResponder or coreaudiod are flagged dangerous-to-stop and the button is disabled. The process may be owned by another user (typically root) so the sandboxed app cannot signal it. Or it survived SIGTERM, in which case a red Force Stop button appears that sends SIGKILL."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What's the difference between Stop and Force Stop?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Stop sends SIGTERM, asking the process to shut down cleanly — most servers handle this gracefully by closing connections and exiting. Force Stop sends SIGKILL, which immediately terminates the process without cleanup. PortPilot only offers Force Stop if SIGTERM failed and the process is still listening on the port."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does PortPilot work on Intel Macs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PortPilot v0.1 ships for Apple Silicon (arm64) only. An Intel (x86_64) build is on the roadmap once arm64 has been validated in the App Store."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does PortPilot detect Docker containers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PortPilot runs docker ps to list running containers and reads their port mappings. If the Docker CLI is not installed or Docker Desktop is not running, PortPilot silently skips the Docker scan and regular processes still show up. Stopping a Docker-backed port calls docker stop on the container ID; PortPilot never signals the Docker backend itself."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What permissions does PortPilot need?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PortPilot runs in Apple's sandbox with the minimum entitlements: read process and port information via lsof and ps, send SIGTERM/SIGKILL only to processes you explicitly select, open URLs in your browser, and reveal folders in Finder. It does not request network access, location, contacts, camera, microphone, or full disk access."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where does PortPilot store my settings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On your Mac, in the app's sandboxed container under ~/Library/Containers/dev.portpilot.app/. Theme preference, search history, filter state, and custom aliases live there. No settings are synced with iCloud or any remote service."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is PortPilot free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. PortPilot is free to download from the Mac App Store. There are no in-app purchases, no subscription tiers, no paid features, and no ads."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "I found a bug or want to request a feature.",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Please email sebasaliaga2515@gmail.com with a clear description, your macOS version, and a screenshot of the PortPilot panel if relevant. Bug reports that include the affected port number and command are the fastest to diagnose."
+        }
+      }
+    ]
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

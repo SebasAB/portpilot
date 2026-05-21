@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: Inter, -apple-system, sans-serif;
+      background: #0d1117;
+      background-image:
+        radial-gradient(ellipse 800px 500px at 78% 50%, rgba(47, 127, 98, 0.22), transparent 70%),
+        radial-gradient(ellipse 600px 400px at 12% 110%, rgba(47, 127, 98, 0.12), transparent 70%);
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0 72px;
+    }
+
+    /* subtle grid */
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+    }
+
+    .left {
+      position: relative;
+      z-index: 2;
+      width: 620px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 44px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      background: #2f7f62;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(47, 127, 98, 0.4);
+    }
+
+    .brand-name {
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: rgba(47, 127, 98, 0.16);
+      border: 1px solid #1f5342;
+      color: #6ed2a6;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border-radius: 100px;
+      padding: 7px 17px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 60px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 26px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: #6ed2a6;
+    }
+
+    .sub {
+      font-size: 23px;
+      line-height: 1.5;
+      color: #9daab4;
+      font-weight: 400;
+    }
+
+    .meta {
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      color: #c6d1d8;
+      font-weight: 500;
+    }
+
+    .chip .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #2f7f62;
+    }
+
+    /* right: app window */
+    .right {
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-3deg);
+      z-index: 1;
+    }
+
+    .window {
+      width: 380px;
+      background: #161d23;
+      border: 1px solid #2f3a43;
+      border-radius: 16px;
+      box-shadow: 0 40px 90px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    .wtitle {
+      padding: 14px 16px;
+      border-bottom: 1px solid #2f3a43;
+      font-size: 17px;
+      font-weight: 700;
+      color: #f1f6f9;
+    }
+
+    .wsub { font-size: 12px; color: #9daab4; font-weight: 400; margin-top: 2px; }
+
+    .card {
+      margin: 12px;
+      background: #1a2230;
+      border: 1px solid #2f3a43;
+      border-radius: 11px;
+      padding: 13px 14px;
+    }
+
+    .card + .card { margin-top: 0; }
+
+    .card-head { display: flex; justify-content: space-between; align-items: center; }
+    .card-name { font-size: 16px; font-weight: 700; color: #f1f6f9; }
+    .card-url { font-size: 13px; color: #6ed2a6; margin-top: 2px; }
+
+    .badge {
+      min-width: 56px; height: 30px;
+      background: #dff8eb; color: #10281f;
+      border-radius: 8px; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .pills { display: flex; gap: 6px; margin-top: 11px; }
+    .pill {
+      font-size: 12px; padding: 3px 9px; border-radius: 6px;
+      background: #253039; color: #c6d1d8;
+    }
+    .pill.docker { background: #1a2f47; color: #b7d5ff; }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="brand">
+      <div class="logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="6.5" fill="white"/>
+          <path d="M18 4v5M18 27v5M4 18h5M27 18h5M8.4 8.4l3.2 3.2M24.4 24.4l3.2 3.2M8.4 27.6l3.2-3.2M24.4 11.6l3.2-3.2" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-name">PortPilot</div>
+    </div>
+
+    <div class="eyebrow">macOS menu bar utility · Free &amp; open source</div>
+
+    <h1>Stop guessing what's<br/>running on <em>your ports</em></h1>
+
+    <p class="sub">See every local server, database, and container — and stop it safely, right from your menu bar.</p>
+
+    <div class="meta">
+      <span class="chip"><span class="dot"></span>No telemetry</span>
+      <span class="chip"><span class="dot"></span>Docker-aware</span>
+      <span class="chip"><span class="dot"></span>One-click stop</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="window">
+      <div class="wtitle">PortPilot<div class="wsub">Last scanned 10:42:35 AM</div></div>
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-name">my-api</div><div class="card-url">localhost:3001</div></div>
+          <div class="badge">3001</div>
+        </div>
+        <div class="pills"><span class="pill">Next.js</span><span class="pill">npm</span><span class="pill">PID 42198</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-name">postgres</div><div class="card-url">localhost:5432</div></div>
+          <div class="badge">5432</div>
+        </div>
+        <div class="pills"><span class="pill docker">Docker</span><span class="pill">postgres:16</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

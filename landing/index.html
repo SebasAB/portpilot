@@ -3,11 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PortPilot — macOS port manager for developers</title>
-  <meta name="description" content="PortPilot lives in your menu bar and tells you exactly what's running on your local ports — and lets you stop it safely." />
+  <title>PortPilot — See & stop what's running on your local ports (macOS)</title>
+  <meta name="description" content="PortPilot is a free macOS menu bar app that shows which local projects are using which ports — the process, framework, and Docker container behind each one — and lets you stop them safely. No telemetry, no cloud." />
+  <link rel="canonical" href="https://portpilot-ten.vercel.app/" />
+  <meta name="theme-color" content="#0d1117" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PortPilot" />
+  <meta property="og:title" content="PortPilot — See & stop what's running on your local ports" />
+  <meta property="og:description" content="A free macOS menu bar app that shows which local projects own which ports — process, framework, and Docker container — and lets you stop them safely." />
+  <meta property="og:url" content="https://portpilot-ten.vercel.app/" />
+  <meta property="og:image" content="https://portpilot-ten.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="PortPilot menu bar app showing local ports with project and Docker details" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PortPilot — See & stop what's running on your local ports" />
+  <meta name="twitter:description" content="A free macOS menu bar app that shows which local projects own which ports and lets you stop them safely." />
+  <meta name="twitter:image" content="https://portpilot-ten.vercel.app/og-image.png" />
+  <meta name="twitter:image:alt" content="PortPilot menu bar app showing local ports" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PortPilot",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS 12.0 or later",
+    "softwareVersion": "0.1.0",
+    "description": "A free macOS menu bar app that shows which local projects are using which ports — the process, framework, and Docker container behind each one — and lets you stop them safely.",
+    "url": "https://portpilot-ten.vercel.app/",
+    "downloadUrl": "https://github.com/SebasAB/portpilot/releases/latest",
+    "image": "https://portpilot-ten.vercel.app/og-image.png",
+    "license": "https://github.com/SebasAB/portpilot/blob/main/LICENSE",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Sebastian Aliaga"
+    }
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
