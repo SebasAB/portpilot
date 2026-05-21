@@ -1,0 +1,101 @@
+{
+  "name": "portpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A macOS menu bar utility for understanding and safely stopping local development ports.",
+  "license": "MIT",
+  "author": "Sebastian Aliaga <sebasaliaga2515@gmail.com>",
+  "homepage": "https://github.com/SebasAB/portpilot#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SebasAB/portpilot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SebasAB/portpilot/issues"
+  },
+  "keywords": [
+    "macos",
+    "menubar",
+    "ports",
+    "electron",
+    "devtools",
+    "developer",
+    "localhost",
+    "docker"
+  ],
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "build": "tsc --noEmit && vite build && tsc -p tsconfig.electron.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dist": "npm run build && electron-builder --mac dmg zip --arm64"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^4.1.6",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "dev.portpilot.app",
+    "productName": "PortPilot",
+    "asar": true,
+    "npmRebuild": false,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    }
+  }
+}

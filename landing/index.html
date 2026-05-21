@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortPilot — macOS port manager for developers</title>
+  <meta name="description" content="PortPilot lives in your menu bar and tells you exactly what's running on your local ports — and lets you stop it safely." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:        #2f7f62;
+      --green-light:  #3a9b78;
+      --green-dim:    #1f5342;
+      --green-glow:   rgba(47, 127, 98, 0.18);
+      --deep:         #10281f;
+      --bg:           #0d1117;
+      --bg-2:         #131a22;
+      --bg-3:         #18222c;
+      --border:       #1f2d38;
+      --border-2:     #28394a;
+      --text:         #e5edf2;
+      --text-2:       #9daab4;
+      --text-3:       #6e7f8a;
+      --badge-bg:     #dff8eb;
+      --badge-fg:     #10281f;
+      --pill-bg:      #1e2d25;
+      --pill-fg:      #a8c9b8;
+      --docker-bg:    #1a2f47;
+      --docker-fg:    #b7d5ff;
+      --danger:       #f08b8b;
+      --danger-bg:    #3a1a1a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── NAV ───────────────────────────────────────── */
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 5vw, 80px);
+      height: 60px;
+      background: rgba(13, 17, 23, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--green);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--green-light); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border-2);
+    }
+
+    .btn-ghost:hover { background: var(--bg-3); color: var(--text); }
+
+    .btn-lg {
+      padding: 13px 28px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+
+    /* ─── HERO ──────────────────────────────────────── */
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 60px;
+      padding: 96px clamp(20px, 5vw, 80px) 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--green-glow);
+      border: 1px solid var(--green-dim);
+      color: #6ed2a6;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-bottom: 20px;
+    }
+
+    .hero-eyebrow svg { flex-shrink: 0; }
+
+    h1 {
+      font-size: clamp(36px, 5vw, 54px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-2);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    .hero-meta-item svg { color: var(--green); }
+
+    /* ─── APP MOCKUP ────────────────────────────────── */
+
+    .mockup-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .mockup-glow {
+      position: relative;
+    }
+
+    .mockup-glow::before {
+      content: '';
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(ellipse at center, rgba(47, 127, 98, 0.22) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-window {
+      position: relative;
+      z-index: 1;
+      width: 360px;
+      border: 1px solid #2f3a43;
+      border-radius: 10px;
+      background: #161d23;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 32px 80px rgba(0,0,0,0.6),
+        0 8px 24px rgba(0,0,0,0.4);
+      font-size: 13px;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .aw-header {
+      background: #161d23;
+      border-bottom: 1px solid #2f3a43;
+      padding: 10px;
+    }
+
+    .aw-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .aw-title { font-size: 14px; font-weight: 700; color: #f1f6f9; }
+    .aw-subtitle { font-size: 10px; color: #9daab4; margin-top: 1px; }
+
+    .aw-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .aw-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: #1e2730;
+      border: 1px solid #3a4651;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .aw-btn svg { color: #9daab4; }
+
+    .aw-search {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      background: #1a2230;
+      border: 1px solid #3a4651;
+      border-radius: 6px;
+      color: #6e7f8a;
+      font-size: 11px;
+    }
+
+    .aw-toolbar {
+      display: flex;
+      align-items: center;
+      padding: 7px 10px;
+    }
+
+    .aw-seg {
+      display: flex;
+      gap: 2px;
+      background: #11161b;
+      border: 1px solid #34404a;
+      border-radius: 7px;
+      padding: 2px;
+    }
+
+    .aw-seg-btn {
+      padding: 2px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      color: #a5b1ba;
+      background: transparent;
+    }
+
+    .aw-seg-btn.on {
+      background: #26313a;
+      color: #f1f6f9;
+    }
+
+    .aw-list {
+      padding: 0 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .aw-card {
+      background: #1a2230;
+      border: 1px solid #2f3a43;
+      border-radius: 8px;
+      padding: 9px;
+    }
+
+    .aw-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 7px;
+    }
+
+    .aw-card-name { font-size: 13px; font-weight: 700; color: #f1f6f9; }
+    .aw-card-url { font-size: 11px; color: #6ed2a6; margin-top: 1px; }
+
+    .aw-port {
+      min-width: 48px;
+      height: 24px;
+      background: #dff8eb;
+      color: #10281f;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .aw-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 7px;
+    }
+
+    .aw-pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #253039;
+      color: #c6d1d8;
+    }
+
+    .aw-pill.docker {
+      background: #1a2f47;
+      color: #b7d5ff;
+    }
+
+    .aw-details {
+      display: grid;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+
+    .aw-detail {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 6px;
+    }
+
+    .aw-dt { font-size: 10px; color: #9daab4; }
+    .aw-dd {
+      font-size: 10px;
+      color: #d5e1e8;
+      font-family: ui-monospace, Menlo, monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .aw-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .aw-action {
+      flex: 1;
+      height: 24px;
+      border-radius: 5px;
+      background: #1e2730;
+      border: 1px solid #3a4651;
+      color: #c6d1d8;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .aw-stop {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 5px;
+      background: transparent;
+      border: 1px solid #7f3d3d;
+      color: #f08b8b;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      margin-left: auto;
+    }
+
+    /* ─── SECTIONS ──────────────────────────────────── */
+
+    section {
+      padding: 80px clamp(20px, 5vw, 80px);
+    }
+
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-2);
+      max-width: 560px;
+      line-height: 1.65;
+    }
+
+    /* ─── FEATURES ──────────────────────────────────── */
+
+    .features-bg {
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .features-head {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .features-head .section-sub {
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--green-dim);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      background: var(--green-glow);
+      border: 1px solid var(--green-dim);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature-icon svg { color: #6ed2a6; }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    /* ─── HOW IT WORKS ──────────────────────────────── */
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 56px;
+    }
+
+    .how-step {
+      position: relative;
+      padding-top: 4px;
+    }
+
+    .how-step::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      right: -16px;
+      width: 32px;
+      height: 1px;
+      background: var(--border-2);
+    }
+
+    .how-step:last-child::before { display: none; }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      background: var(--green-glow);
+      border: 1px solid var(--green-dim);
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+      color: #6ed2a6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    /* ─── SAFETY SECTION ────────────────────────────── */
+
+    .safety-bg {
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .safety-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .safety-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .safety-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+
+    .safety-check {
+      width: 20px;
+      height: 20px;
+      background: var(--green-glow);
+      border: 1px solid var(--green-dim);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .safety-check svg { color: #6ed2a6; }
+
+    .safety-terminal {
+      background: #0d1117;
+      border: 1px solid var(--border-2);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+
+    .term-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .term-dot:nth-child(1) { background: #ff5f56; }
+    .term-dot:nth-child(2) { background: #ffbd2e; }
+    .term-dot:nth-child(3) { background: #27c93f; }
+
+    .term-line { margin-bottom: 5px; }
+    .term-dim { color: var(--text-3); }
+    .term-green { color: #6ed2a6; }
+    .term-yellow { color: #f0c070; }
+    .term-red { color: #f08b8b; }
+    .term-blue { color: #7db8f0; }
+    .term-white { color: #e5edf2; }
+
+    /* ─── DOWNLOAD ──────────────────────────────────── */
+
+    .download-section { text-align: center; }
+    .download-section .section-label { text-align: center; }
+    .download-section h2 { margin-bottom: 12px; }
+    .download-section .section-sub { margin: 0 auto 40px; text-align: center; }
+
+    .download-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 780px;
+      margin: 0 auto;
+      text-align: left;
+    }
+
+    .download-card {
+      position: relative;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 26px 26px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.18s, transform 0.18s, background 0.18s;
+    }
+
+    .download-card.primary {
+      border-left: 3px solid var(--green);
+    }
+
+    .download-card.primary:hover {
+      border-color: var(--green-dim);
+      border-left-color: var(--green-light);
+      background: #1a2a23;
+      transform: translateY(-3px);
+    }
+
+    .download-card.secondary {
+      opacity: 0.94;
+      cursor: default;
+    }
+
+    .download-card.secondary:hover {
+      transform: none;
+      border-color: var(--border);
+    }
+
+    .dl-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .dl-icon.green {
+      background: var(--green-glow);
+      border: 1px solid var(--green-dim);
+      color: #6ed2a6;
+    }
+
+    .dl-icon.apple {
+      background: rgba(240, 192, 112, 0.08);
+      border: 1px solid rgba(240, 192, 112, 0.3);
+      color: #f0c070;
+    }
+
+    .dl-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .download-card.primary .dl-eyebrow { color: var(--green); }
+
+    .dl-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin-top: 2px;
+    }
+
+    .dl-desc {
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.55;
+      margin-top: 6px;
+    }
+
+    .dl-meta {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dl-meta-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text-3);
+    }
+
+    .dl-cta {
+      margin-top: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--green-light);
+    }
+
+    .dl-cta svg { transition: transform 0.15s; }
+    .download-card.primary:hover .dl-cta svg { transform: translateX(3px); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: rgba(240, 192, 112, 0.08);
+      border: 1px solid rgba(240, 192, 112, 0.35);
+      color: #f0c070;
+      font-size: 11px;
+      font-weight: 600;
+      width: fit-content;
+      margin-top: 14px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #f0c070;
+      position: relative;
+    }
+
+    .status-dot::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: #f0c070;
+      opacity: 0.35;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.6); opacity: 0.35; }
+      50%      { transform: scale(1.4); opacity: 0; }
+    }
+
+    .platform-note {
+      margin-top: 32px;
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    .platform-note strong { color: var(--text-2); }
+
+    @media (max-width: 720px) {
+      .download-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ─── FOOTER ────────────────────────────────────── */
+
+    footer {
+      padding: 32px clamp(20px, 5vw, 80px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      text-decoration: none;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    /* ─── RESPONSIVE ────────────────────────────────── */
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 60px;
+        gap: 48px;
+        text-align: center;
+      }
+
+      .hero-sub { max-width: 100%; }
+      .hero-ctas { justify-content: center; }
+      .hero-meta { justify-content: center; }
+      .mockup-wrap { justify-content: center; }
+
+      .safety-grid { grid-template-columns: 1fr; }
+      .safety-terminal { display: none; }
+      .how-grid { grid-template-columns: 1fr; gap: 24px; }
+      .how-step::before { display: none; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────────── -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="3" fill="white" />
+        <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.76 3.76l1.42 1.42M10.83 10.83l1.41 1.41M3.76 12.24l1.42-1.41M10.83 5.17l1.41-1.41" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    PortPilot
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#safety">Safety</a></li>
+    <li><a href="#download">Download</a></li>
+  </ul>
+
+  <a href="#download" class="btn btn-primary" style="font-size:13px; padding: 7px 16px;">
+    Download
+  </a>
+</nav>
+
+<!-- ─── HERO ─────────────────────────────────────────── -->
+<div class="hero">
+
+  <div class="hero-copy">
+    <div class="hero-eyebrow">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor">
+        <circle cx="5.5" cy="5.5" r="5.5" fill="#27c93f"/>
+      </svg>
+      macOS menu bar app — v0.1
+    </div>
+
+    <h1>Stop guessing<br/>what's running<br/>on <em>your ports</em></h1>
+
+    <p class="hero-sub">
+      PortPilot lives in your menu bar. One click and you see every local server,
+      database, and container — what it is, which project owns it, and how to stop it safely.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#download" class="btn btn-primary btn-lg">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Download for macOS
+      </a>
+      <a href="#features" class="btn btn-ghost btn-lg">See features</a>
+    </div>
+
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1l1.5 4.5H13L9.5 8.5 11 13 7 10.5 3 13l1.5-4.5L1 5.5h4.5z" fill="currentColor"/>
+        </svg>
+        Free &amp; open source
+      </div>
+      <div class="hero-meta-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M4.5 7l2 2 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        No cloud, no telemetry
+      </div>
+      <div class="hero-meta-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1C3.69 1 1 3.69 1 7s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 3v3.5l2.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Scans every 6 seconds
+      </div>
+    </div>
+  </div>
+
+  <!-- App window mockup -->
+  <div class="mockup-wrap">
+    <div class="mockup-glow">
+      <div class="app-window">
+
+        <!-- Header -->
+        <div class="aw-header">
+          <div class="aw-title-row">
+            <div>
+              <div class="aw-title">PortPilot</div>
+              <div class="aw-subtitle">Last scanned 10:42:35 AM</div>
+            </div>
+            <div class="aw-btns">
+              <div class="aw-btn">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M2 6.5C2 4.01 4.01 2 6.5 2s4.5 2.01 4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  <path d="M11 4.5V2M11 2H8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="aw-btn">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M6.5 1v1.5M6.5 10v1.5M1 6.5h1.5M10 6.5h1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="aw-btn" style="color:#9f4f4f;">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M6.5 3.5v3M6.5 8.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="aw-search">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M8 8l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Search ports, projects, commands…
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="aw-toolbar">
+          <div class="aw-seg">
+            <div class="aw-seg-btn on">Common ports</div>
+            <div class="aw-seg-btn">All</div>
+          </div>
+        </div>
+
+        <!-- Card list -->
+        <div class="aw-list">
+
+          <!-- Card 1 -->
+          <div class="aw-card">
+            <div class="aw-card-head">
+              <div>
+                <div class="aw-card-name">my-api</div>
+                <div class="aw-card-url">localhost:3001</div>
+              </div>
+              <div class="aw-port">3001</div>
+            </div>
+            <div class="aw-pills">
+              <span class="aw-pill">Next.js</span>
+              <span class="aw-pill">npm</span>
+              <span class="aw-pill">PID 42198</span>
+            </div>
+            <div class="aw-details">
+              <div class="aw-detail">
+                <span class="aw-dt">Command</span>
+                <span class="aw-dd">node server.js</span>
+              </div>
+              <div class="aw-detail">
+                <span class="aw-dt">Project</span>
+                <span class="aw-dd">~/Projects/my-api</span>
+              </div>
+            </div>
+            <div class="aw-actions">
+              <div class="aw-action">↗ Open</div>
+              <div class="aw-action">⎘ Copy</div>
+              <div class="aw-action">⌫ Reveal</div>
+              <div class="aw-action">✏ Alias</div>
+            </div>
+            <div class="aw-stop">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="8" height="8" rx="1"/></svg>
+              Stop
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="aw-card">
+            <div class="aw-card-head">
+              <div>
+                <div class="aw-card-name">postgres</div>
+                <div class="aw-card-url">localhost:5432</div>
+              </div>
+              <div class="aw-port">5432</div>
+            </div>
+            <div class="aw-pills">
+              <span class="aw-pill docker">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="currentColor" style="margin-right:2px"><rect x="1" y="2" width="2" height="2"/><rect x="3.5" y="2" width="2" height="2"/><rect x="3.5" y="4.5" width="2" height="2"/><rect x="6" y="2" width="2" height="2"/></svg>
+                Docker
+              </span>
+              <span class="aw-pill">postgres:16</span>
+              <span class="aw-pill">running</span>
+            </div>
+            <div class="aw-details">
+              <div class="aw-detail">
+                <span class="aw-dt">Container</span>
+                <span class="aw-dd">postgres · postgres:16</span>
+              </div>
+            </div>
+            <div class="aw-actions">
+              <div class="aw-action">↗ Open</div>
+              <div class="aw-action">⎘ Copy</div>
+              <div class="aw-action">⌫ Reveal</div>
+              <div class="aw-action">✏ Alias</div>
+            </div>
+            <div class="aw-stop">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="8" height="8" rx="1"/></svg>
+              Stop
+            </div>
+          </div>
+
+        </div><!-- /aw-list -->
+      </div><!-- /app-window -->
+    </div>
+  </div>
+
+</div><!-- /hero -->
+
+<!-- ─── FEATURES ──────────────────────────────────────── -->
+<section class="features-bg" id="features">
+  <div class="section-inner">
+    <div class="features-head">
+      <div class="section-label">Features</div>
+      <h2>Everything you need to tame local dev</h2>
+      <p class="section-sub">
+        PortPilot reads your system in real-time — no config files, no plugins, no setup.
+      </p>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.34 4.34l1.42 1.42M14.24 14.24l1.42 1.42M4.34 15.66l1.42-1.42M14.24 5.76l1.42-1.42" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">Instant visibility</div>
+        <p class="feature-desc">
+          See every local port, the process behind it, which project directory it lives in,
+          and what command started it — all in one compact panel.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">Smart detection</div>
+        <p class="feature-desc">
+          Automatically identifies frameworks (Next.js, Vite, Rails…), package managers,
+          and Docker containers — so you always know what's what.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">Search &amp; filter</div>
+        <p class="feature-desc">
+          Filter by port number, project name, alias, PID, command, framework,
+          package manager, Docker image, or container ID — as you type.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 3C6.13 3 3 6.13 3 10s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M10 7v4l3 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">One-click actions</div>
+        <p class="feature-desc">
+          Open the local URL in your browser, copy it to clipboard, reveal the project folder
+          in Finder, or rename a port with a custom alias.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2l2.39 4.84 5.34.78-3.87 3.77.91 5.33L10 14.27l-4.77 2.45.91-5.33L2.27 7.62l5.34-.78z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">Docker-aware</div>
+        <p class="feature-desc">
+          Detects Docker containers alongside regular processes. Stop a container
+          with <code style="font-size:12px;color:#6ed2a6;">docker stop</code> without touching the Docker backend itself.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8 8.5C8 7.67 8.9 7 10 7s2 .67 2 1.5c0 1.5-2 1.5-2 3M10 14v.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="feature-title">System &amp; dark themes</div>
+        <p class="feature-desc">
+          Follows your macOS appearance automatically, or lock it to light or dark.
+          The panel always feels at home on your desktop.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ──────────────────────────────────── -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-label">How it works</div>
+    <h2>Zero setup. Just run it.</h2>
+    <p class="section-sub">
+      PortPilot uses <code style="font-size:15px;color:#6ed2a6;">lsof</code> and <code style="font-size:15px;color:#6ed2a6;">ps</code> to read your system state —
+      no root permissions, no daemons, no config files.
+    </p>
+
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="step-num">1</div>
+        <div class="step-title">Install &amp; launch</div>
+        <p class="step-desc">
+          Download the <code style="font-size:13px;color:#6ed2a6;">.dmg</code>, drag PortPilot to Applications,
+          and open it. It appears as a small icon in your menu bar immediately.
+        </p>
+      </div>
+
+      <div class="how-step">
+        <div class="step-num">2</div>
+        <div class="step-title">Click the icon</div>
+        <p class="step-desc">
+          A compact panel drops down showing every active local port with project info,
+          framework tags, and quick actions. No windows, no Dock clutter.
+        </p>
+      </div>
+
+      <div class="how-step">
+        <div class="step-num">3</div>
+        <div class="step-title">Stop what you don't need</div>
+        <p class="step-desc">
+          Hit Stop to send <code style="font-size:13px;color:#6ed2a6;">SIGTERM</code>. If it hangs, Force Stop appears.
+          Protected system processes are marked and cannot be stopped.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SAFETY ────────────────────────────────────────── -->
+<section class="safety-bg" id="safety">
+  <div class="section-inner">
+    <div class="safety-grid">
+
+      <div>
+        <div class="section-label">Safety model</div>
+        <h2>Designed to never surprise you</h2>
+        <p class="section-sub">
+          Stopping a process you didn't mean to is painful. PortPilot puts multiple guardrails
+          between you and an accidental kill.
+        </p>
+
+        <ul class="safety-list">
+          <li class="safety-item">
+            <div class="safety-check">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>Shell commands only run in the Electron main process — the renderer never touches the shell.</span>
+          </li>
+          <li class="safety-item">
+            <div class="safety-check">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span><code style="font-size:12px;color:#6ed2a6;">SIGTERM</code> is sent first. <code style="font-size:12px;color:#6ed2a6;">SIGKILL</code> is only available if the process survives and you explicitly click Force Stop.</span>
+          </li>
+          <li class="safety-item">
+            <div class="safety-check">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>Protected system processes are flagged and cannot be stopped — even if they're holding a port.</span>
+          </li>
+          <li class="safety-item">
+            <div class="safety-check">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>Stop actions operate only on records the scanner knows about and the main process re-validates before acting.</span>
+          </li>
+          <li class="safety-item">
+            <div class="safety-check">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>Docker containers use <code style="font-size:12px;color:#6ed2a6;">docker stop</code> — the Docker Desktop backend is never touched directly.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="safety-terminal">
+        <div class="term-bar">
+          <div class="term-dot"></div>
+          <div class="term-dot"></div>
+          <div class="term-dot"></div>
+        </div>
+        <div class="term-line"><span class="term-dim">→</span> <span class="term-green">Stopping</span> <span class="term-white">my-api</span> <span class="term-dim">(PID 42198)</span></div>
+        <div class="term-line term-dim">&nbsp;&nbsp;Sending SIGTERM…</div>
+        <div class="term-line"><span class="term-dim">→</span> <span class="term-yellow">Waiting</span> <span class="term-dim">for graceful shutdown</span></div>
+        <div class="term-line term-dim" style="margin-bottom:12px;">&nbsp;</div>
+        <div class="term-line"><span class="term-green">✓</span> <span class="term-white">my-api</span> <span class="term-dim">stopped cleanly.</span></div>
+        <div class="term-line term-dim" style="margin-bottom:12px;">&nbsp;</div>
+        <div class="term-line"><span class="term-dim">→</span> <span class="term-green">Stopping</span> <span class="term-white">postgres</span> <span class="term-dim">(Docker)</span></div>
+        <div class="term-line term-dim">&nbsp;&nbsp;Running: docker stop postgres_1</div>
+        <div class="term-line"><span class="term-green">✓</span> <span class="term-white">postgres</span> <span class="term-dim">container stopped.</span></div>
+        <div class="term-line term-dim" style="margin-bottom:12px;">&nbsp;</div>
+        <div class="term-line"><span class="term-dim">→</span> <span class="term-blue">Skip</span> <span class="term-white">coreaudiod</span> <span class="term-dim">— protected system process</span></div>
+        <div class="term-line"><span class="term-red">✕</span> <span class="term-dim">Stop disabled for this record.</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── DOWNLOAD ──────────────────────────────────────── -->
+<section id="download" class="download-section">
+  <div class="section-inner">
+    <div class="section-label">Download</div>
+    <h2>Get PortPilot for macOS</h2>
+    <p class="section-sub">
+      Two ways to install. Grab the open-source build from GitHub today, or wait for the
+      signed Mac App Store release.
+    </p>
+
+    <div class="download-grid">
+
+      <!-- Card 1 — GitHub primary -->
+      <a href="https://github.com/SebasAB/portpilot/releases/latest" class="download-card primary" target="_blank" rel="noopener">
+        <div class="dl-icon green">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 2v11M7 9l4 4 4-4M3 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="dl-eyebrow">Available now</div>
+        <div class="dl-title">Download v0.1.0 from GitHub</div>
+        <p class="dl-desc">
+          Open-source <code style="font-size:12px;color:#6ed2a6;background:rgba(47,127,98,0.12);padding:1px 5px;border-radius:4px;">.dmg</code> build.
+          Unsigned — right-click → Open on first launch.
+        </p>
+        <div class="dl-meta">
+          <span>Free</span>
+          <span class="dl-meta-dot"></span>
+          <span>arm64</span>
+          <span class="dl-meta-dot"></span>
+          <span>macOS 12+</span>
+        </div>
+        <div class="dl-cta">
+          Get the .dmg
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Card 2 — App Store secondary -->
+      <div class="download-card secondary">
+        <div class="dl-icon apple">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M15.13 11.65c-.02-2.41 1.97-3.57 2.06-3.62-1.12-1.65-2.87-1.87-3.49-1.9-1.49-.15-2.9.88-3.65.88-.77 0-1.92-.86-3.16-.84-1.63.02-3.13.95-3.96 2.41-1.69 2.93-.43 7.26 1.21 9.64.8 1.17 1.76 2.47 3 2.43 1.21-.05 1.66-.78 3.12-.78 1.45 0 1.86.78 3.13.75 1.29-.02 2.11-1.18 2.9-2.35.91-1.35 1.29-2.65 1.32-2.72-.03-.01-2.51-.96-2.53-3.83zM12.71 4.44c.66-.81 1.11-1.93.99-3.03-.95.04-2.11.64-2.79 1.45-.61.71-1.15 1.85-1 2.94 1.06.08 2.15-.54 2.81-1.36z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="dl-eyebrow">Coming soon</div>
+        <div class="dl-title">Mac App Store</div>
+        <p class="dl-desc">
+          One-click install. Signed and notarized by Apple, fully sandboxed.
+        </p>
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          <span>In review · submitted May 2026</span>
+        </div>
+        <div class="dl-meta">
+          <span>Free</span>
+          <span class="dl-meta-dot"></span>
+          <span>arm64</span>
+          <span class="dl-meta-dot"></span>
+          <span>macOS 12+</span>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="platform-note">
+      <strong>macOS arm64</strong> · Requires macOS 12+ · Free · No in-app purchases · No telemetry
+    </p>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────────── -->
+<footer>
+  <a href="#" class="footer-logo">
+    <div class="nav-logo-icon" style="width:22px;height:22px;border-radius:6px;">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <circle cx="6" cy="6" r="2" fill="white"/>
+        <path d="M6 1v1.5M6 9.5V11M1 6h1.5M9.5 6H11M2.64 2.64l1.06 1.06M8.3 8.3l1.06 1.06M2.64 9.36l1.06-1.06M8.3 3.7l1.06-1.06" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    PortPilot
+  </a>
+
+  <div class="footer-links">
+    <a href="privacy.html">Privacy</a>
+    <a href="support.html">Support</a>
+    <a href="#features">Features</a>
+  </div>
+
+  <p class="footer-copy">© 2026 PortPilot · macOS arm64 · v0.1</p>
+</footer>
+
+</body>
+</html>
