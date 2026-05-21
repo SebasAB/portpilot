@@ -4,3 +4,4 @@ dist-electron/
 release/
 package-lock.json
 landing/
+scripts/og-image.html
